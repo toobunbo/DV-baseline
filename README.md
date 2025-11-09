@@ -11,11 +11,11 @@ Tài liệu này đóng vai trò là **"bảng đáp án"** để đánh giá:
 
 - **Độ sâu (Depth):** Khả năng vượt qua (*bypass*) các cơ chế phòng vệ (*filter*) cơ bản và nâng cao của công cụ.
 
-# Lỗ hổng: Local File Inclusion (LFI) - (OWASP A03:2021 - Injection)
-## Phương pháp
+# Local File Inclusion (LFI) - (OWASP A03:2021 - Injection)
+## Method
 Phân tích mã nguồn cho thấy một cơ chế `Whitelist (fnmatch("file*", ... ))` đã được triển khai nhưng bị lỗi, cho phép dữ liệu do người dùng include file tuỳ ý.
 
-## Phân tích Dòng mã Lỗi (Vulnerable Code Line)
+## Vulnerable Code Line
 ### vulnerabilities/fi/index.php
 
 1. Biến `$file` nhận giá trị trực tiếp từ tham số 'page' của người dùng.
@@ -29,7 +29,7 @@ Phân tích mã nguồn cho thấy một cơ chế `Whitelist (fnmatch("file*", 
     include( $file );
 ```
 
-## Kịch bản Khai thác (Proof of Value - PoV)
+## Proof of Value - PoV
 ### Kịch bản 1: Đọc tệp tin hệ thống qua PHP Wrapper
 * Tác động: Lộ lọt dữ liệu nhạy cảm.
 * Payload: 
