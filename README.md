@@ -57,6 +57,7 @@ file/../../../../../../etc/passwd
 ### Screenshots
 - Đọc tệp tin hệ thống qua PHP Wrapper
 <img width="2027" height="1291" alt="image" src="https://github.com/user-attachments/assets/05e2c76f-822b-4a9b-883e-c03d1673de11" />
+
 - Đọc tệp tin hệ thống qua Path Traversal
 <img width="2029" height="1338" alt="image" src="https://github.com/user-attachments/assets/026e60e3-6cc3-430e-ad90-a7f6754199c3" />
 
