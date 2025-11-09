@@ -83,7 +83,7 @@ Mặc dù ứng dụng đã sử dụng  `getimagesize()` để xác nhận nó 
 ## Proof of Value (PoV)
 Kịch bản này chứng minh rằng một tệp chứa mã PHP có thể được tải lên và lưu trữ trên máy chủ, qua mặt cơ chế kiểm tra tệp ảnh.
 
-### Kịch bản: Tải lên tệp Polyglot (JPEG + PHP)
+### Tải lên tệp Polyglot (JPEG + PHP)
 - **Mục tiêu:** Tải lên một tệp webshell đơn giản có đuôi `.jpg`.
 - **Ý tưởng:** Tạo một tệp `shell.jpg` là một tệp JPEG hợp lệ nhưng có chèn mã PHP vào dữ liệu EXIF hoặc metadata.
 
