@@ -24,7 +24,7 @@ Lỗ hổng xảy ra do luồng dữ liệu không an toàn từ "Untrusted data
 ```
     $file = $_GET[ 'page' ];
 ```
-* Mô tả: Biến `$file` nhận giá trị trực tiếp từ tham số 'page' của người dùng.
+* Mô tả: Biến `$file` nhận giá trị trực tiếp từ tham số `'page'` của người dùng.
 
 2. Nơi xử lý (Sink) - Nơi thực thi hàm nguy hiểm:
 * Vị trí: vulnerabilities/fi/index.php
@@ -32,7 +32,7 @@ Lỗ hổng xảy ra do luồng dữ liệu không an toàn từ "Untrusted data
 ```
     include( $file );
 ```
-* Mô tả: Biến `$file` (hiện đang chứa payload) được truyền thẳng vào hàm include(). Hàm này sẽ thực thi hoặc hiển thị bất kỳ file nào được chỉ định, dẫn đến LFI.
+* Mô tả: Biến `$file` (hiện đang chứa payload) được truyền thẳng vào hàm `include()`. Hàm này sẽ thực thi hoặc hiển thị bất kỳ file nào được chỉ định, dẫn đến LFI.
 
 ## Kịch bản Khai thác (Proof of Concept - PoC)
 
