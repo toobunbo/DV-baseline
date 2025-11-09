@@ -16,7 +16,7 @@ Tài liệu này đóng vai trò là **"bảng đáp án"** để đánh giá:
 Phân tích mã nguồn cho thấy một cơ chế `Whitelist (fnmatch("file*", ... ))` đã được triển khai nhưng bị lỗi, cho phép dữ liệu do người dùng kiểm soát đi vào hàm `include()` dẫn tới LFI.
 
 ## Vulnerable Code 
-### vulnerabilities/fi/index.php
+### vulnerabilities/fi/source/high.php
 
 ```
 if( !fnmatch( "file*", $file ) && $file != "include.php" ) { ...
@@ -64,11 +64,19 @@ file/../../../../../../etc/passwd
 # Unrestricted File Upload (OWASP A08:2021 - Software and Data Integrity Failures)
 
 ## Method
-Phân tích chức năng tải lên tại `/vulnerabilities/upload/` cho thấy cơ chế xác thực tệp tin không đầy đủ.
+Phân tích chức năng tải lên tại `/vulnerabilities/upload/` cho thấy cơ chế xác thực tệp tin không đầy đủ. Cho phép người dùng upload image `(jpg, jpeg, png)` với **content tuỳ ý**
 
-Mặc dù ứng dụng dường như kiểm tra phần mở rộng và kiểu MIME của tệp (ví dụ: sử dụng `getimagesize()` hoặc `exif_imagetype()` để xác nhận nó là ảnh), nó **không phân tích nội dung bên trong của tệp**.
+## Vulnerable Code 
+### vulnerabilities/upload/source/high.php
+```
+ // Is it an image?
+    if( ( strtolower( $uploaded_ext ) == "jpg" || strtolower( $uploaded_ext ) == "jpeg" || strtolower( $uploaded_ext ) == "png" ) &&
+        ( $uploaded_size < 100000 ) &&
+        getimagesize( $uploaded_tmp ) ) {
+```
+Mặc dù ứng dụng đã sử dụng  `getimagesize()` để xác nhận nó là ảnh và kiểm tra ext trong whitelist ["jpg", "jpeg", "png"] nhưng lại **không phân tích nội dung bên trong của tệp**.
 
-Điều này cho phép kẻ tấn công tạo ra một tệp *polyglot* (tệp đa định dạng) — một tệp vừa là `image/jpeg` hợp lệ, vừa chứa mã PHP độc hại — và tải nó lên máy chủ thành công.
+Điều này cho phép kẻ tấn công tạo ra một tệp *polyglot* — một tệp vừa là `image/jpeg` hợp lệ, vừa chứa mã PHP độc hại — và tải nó lên máy chủ thành công.
 
 ---
 
