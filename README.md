@@ -74,7 +74,7 @@ Phân tích chức năng tải lên tại `/vulnerabilities/upload/` cho thấy 
         ( $uploaded_size < 100000 ) &&
         getimagesize( $uploaded_tmp ) ) {
 ```
-Mặc dù ứng dụng đã sử dụng  `getimagesize()` để xác nhận nó là ảnh và kiểm tra ext trong whitelist ["jpg", "jpeg", "png"] nhưng lại **không phân tích nội dung bên trong của tệp**.
+Mặc dù ứng dụng đã sử dụng  `getimagesize()` để xác nhận nó là ảnh và kiểm tra ext trong whitelist `["jpg", "jpeg", "png"]` nhưng lại **không phân tích nội dung bên trong của tệp**.
 
 Điều này cho phép kẻ tấn công tạo ra một tệp *polyglot* — một tệp vừa là `image/jpeg` hợp lệ, vừa chứa mã PHP độc hại — và tải nó lên máy chủ thành công.
 
