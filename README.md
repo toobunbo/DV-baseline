@@ -16,26 +16,20 @@ Tài liệu này đóng vai trò là **"bảng đáp án"** để đánh giá:
 Phân tích mã nguồn cho thấy một cơ chế `Whitelist (fnmatch("file*", ... ))` đã được triển khai nhưng bị lỗi, cho phép dữ liệu do người dùng include file tuỳ ý.
 
 ## Phân tích Dòng mã Lỗi (Vulnerable Code Line)
-Lỗ hổng xảy ra do luồng dữ liệu không an toàn từ "Untrusted data" đến hàm gọi nguy hiểm
+### vulnerabilities/fi/index.php
 
-1. Nguồn (Source) - Nơi nhận dữ liệu không tin cậy:
-* Vị trí: vulnerabilities/fi/index.php
+1. Biến `$file` nhận giá trị trực tiếp từ tham số 'page' của người dùng.
 * Code:
 ```
     $file = $_GET[ 'page' ];
 ```
-* Mô tả: Biến `$file` nhận giá trị trực tiếp từ tham số `'page'` của người dùng.
-
-2. Nơi xử lý (Sink) - Nơi thực thi hàm nguy hiểm:
-* Vị trí: vulnerabilities/fi/index.php
+2. Biến `$file` (hiện đang chứa payload) được truyền thẳng vào hàm `include()`. Hàm này sẽ thực thi hoặc hiển thị bất kỳ file nào được chỉ định, dẫn đến LFI.
 * Code:
 ```
     include( $file );
 ```
-* Mô tả: Biến `$file` (hiện đang chứa payload) được truyền thẳng vào hàm `include()`. Hàm này sẽ thực thi hoặc hiển thị bất kỳ file nào được chỉ định, dẫn đến LFI.
 
-## Kịch bản Khai thác (Proof of Concept - PoC)
-
+## Kịch bản Khai thác (Proof of Value - PoV)
 ### Kịch bản 1: Đọc tệp tin hệ thống qua PHP Wrapper
 * Tác động: Lộ lọt dữ liệu nhạy cảm.
 * Payload: 
