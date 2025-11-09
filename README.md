@@ -13,13 +13,13 @@ Tài liệu này đóng vai trò là **"bảng đáp án"** để đánh giá:
 
 # Local File Inclusion (LFI) - (OWASP A03:2021 - Injection)
 ## Method
-Phân tích mã nguồn cho thấy một cơ chế `Whitelist (fnmatch("file*", ... ))` đã được triển khai nhưng bị lỗi, cho phép dữ liệu do người dùng include file tuỳ ý.
+Phân tích mã nguồn cho thấy một cơ chế `Whitelist (fnmatch("file*", ... ))` đã được triển khai nhưng bị lỗi, cho phép dữ liệu do người dùng kiểm soát đi vào hàm `include()` dẫn tới LFI.
 
 ## Vulnerable Code 
 ### vulnerabilities/fi/index.php
 
 ```
-if( !fnmatch( "file*", $file ) && $file != "include.php" ) {
+if( !fnmatch( "file*", $file ) && $file != "include.php" ) { ...
 ```
 Hàm fnmatch() với pattern "file*" (bất cứ thứ gì bắt đầu bằng "file"). Nó không chỉ khớp với 'file1.php', mà nó còn khớp với:
 -   PHP Wrapper: 'file:///etc/passwd'
