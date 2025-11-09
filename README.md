@@ -15,8 +15,8 @@ Tài liệu này đóng vai trò là **"bảng đáp án"** để đánh giá:
 ## Method
 Phân tích mã nguồn cho thấy một cơ chế `Whitelist (fnmatch("file*", ... ))` đã được triển khai nhưng bị lỗi, cho phép dữ liệu do người dùng include file tuỳ ý.
 
-## Vulnerable Code Line
-### Source: vulnerabilities/fi/index.php
+## Vulnerable Code 
+### vulnerabilities/fi/index.php
 
 ```
 if( !fnmatch( "file*", $file ) && $file != "include.php" ) {
