@@ -21,11 +21,7 @@ Phân tích mã nguồn cho thấy một cơ chế `Whitelist (fnmatch("file*", 
 ```
 if( !fnmatch( "file*", $file ) && $file != "include.php" ) {
 ```
-Vấn đề nằm ở Dòng 2 ( fnmatch( "file*", $file ) ).
-
-1.  **Ý định của lập trình viên:** Có vẻ như họ muốn chỉ cho phép các tệp tin có sẵn trong thư mục, ví dụ như 'file1.php', 'file2.php', v.v., và tệp 'include.php'.
-
-2.  **Thực tế (Lỗi logic):** Hàm fnmatch() với pattern "file*" (bất cứ thứ gì bắt đầu bằng "file"). Nó không chỉ khớp với 'file1.php', mà nó còn khớp với:
+Hàm fnmatch() với pattern "file*" (bất cứ thứ gì bắt đầu bằng "file"). Nó không chỉ khớp với 'file1.php', mà nó còn khớp với:
     * PHP Wrapper: 'file:///etc/passwd'
     * Path Traversal: 'file/../../../../../../etc/passwd'
 ## Proof of Value - PoV
