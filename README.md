@@ -16,19 +16,18 @@ Tài liệu này đóng vai trò là **"bảng đáp án"** để đánh giá:
 Phân tích mã nguồn cho thấy một cơ chế `Whitelist (fnmatch("file*", ... ))` đã được triển khai nhưng bị lỗi, cho phép dữ liệu do người dùng include file tuỳ ý.
 
 ## Vulnerable Code Line
-### vulnerabilities/fi/index.php
+### Source: vulnerabilities/fi/index.php
 
-1. Biến `$file` nhận giá trị trực tiếp từ tham số 'page' của người dùng.
-* Code:
 ```
-    $file = $_GET[ 'page' ];
+if( !fnmatch( "file*", $file ) && $file != "include.php" ) {
 ```
-2. Biến `$file` (hiện đang chứa payload) được truyền thẳng vào hàm `include()`. Hàm này sẽ thực thi hoặc hiển thị bất kỳ file nào được chỉ định, dẫn đến LFI.
-* Code:
-```
-    include( $file );
-```
+Vấn đề nằm ở Dòng 2 ( fnmatch( "file*", $file ) ).
 
+1.  **Ý định của lập trình viên:** Có vẻ như họ muốn chỉ cho phép các tệp tin có sẵn trong thư mục, ví dụ như 'file1.php', 'file2.php', v.v., và tệp 'include.php'.
+
+2.  **Thực tế (Lỗi logic):** Hàm fnmatch() với pattern "file*" (bất cứ thứ gì bắt đầu bằng "file"). Nó không chỉ khớp với 'file1.php', mà nó còn khớp với:
+    * PHP Wrapper: 'file:///etc/passwd'
+    * Path Traversal: 'file/../../../../../../etc/passwd'
 ## Proof of Value - PoV
 ### Kịch bản 1: Đọc tệp tin hệ thống qua PHP Wrapper
 * Tác động: Lộ lọt dữ liệu nhạy cảm.
@@ -59,4 +58,7 @@ file/../../../../../../etc/passwd
 * Kết quả: *Response* trả về sẽ chứa dữ liệu của **/etc/passwd**
 
 ### Screenshots
-(Dán ảnh chụp màn hình của bạn vào đây)
+
+<img width="2027" height="1291" alt="image" src="https://github.com/user-attachments/assets/05e2c76f-822b-4a9b-883e-c03d1673de11" />
+<img width="2029" height="1338" alt="image" src="https://github.com/user-attachments/assets/026e60e3-6cc3-430e-ad90-a7f6754199c3" />
+
