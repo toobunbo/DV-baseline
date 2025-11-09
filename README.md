@@ -24,6 +24,7 @@ if( !fnmatch( "file*", $file ) && $file != "include.php" ) { ...
 Hàm `fnmatch()` với pattern "file*" (bất cứ thứ gì bắt đầu bằng "file"). Nó không chỉ khớp với 'file1.php', mà nó còn khớp với:
 -   PHP Wrapper: *'file:///etc/passwd'*
 -   Path Traversal: *'file/../../../../../../etc/passwd'*
+-   Các file bắt đàu bằng "file*". Ví dụ :"file4.php, file5.php".
 ## Proof of Value - PoV
 ### Kịch bản 1: Đọc tệp tin hệ thống qua PHP Wrapper
 * Tác động: Lộ lọt dữ liệu nhạy cảm.
