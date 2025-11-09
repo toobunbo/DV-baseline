@@ -19,7 +19,6 @@ Phân tích mã nguồn cho thấy một cơ chế `Whitelist (fnmatch("file*", 
 Lỗ hổng xảy ra do luồng dữ liệu không an toàn từ "Untrusted data" đến hàm gọi nguy hiểm
 
 1. Nguồn (Source) - Nơi nhận dữ liệu không tin cậy:
-------------------------------------------------------
 * Vị trí: vulnerabilities/fi/index.php
 * Code:
 ```
@@ -28,7 +27,6 @@ Lỗ hổng xảy ra do luồng dữ liệu không an toàn từ "Untrusted data
 * Mô tả: Biến `$file` nhận giá trị trực tiếp từ tham số 'page' của người dùng.
 
 2. Nơi xử lý (Sink) - Nơi thực thi hàm nguy hiểm:
-------------------------------------------------------
 * Vị trí: vulnerabilities/fi/index.php
 * Code:
 ```
