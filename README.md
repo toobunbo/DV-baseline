@@ -126,7 +126,7 @@ curl -i -X POST 'http://[DVWA_IP]/vulnerabilities/upload/'      -b 'security=hig
   <img width="2557" height="1017" alt="image" src="https://github.com/user-attachments/assets/f78bc443-378b-44e9-9776-168947e73427" />
   
 - Trigger tới **shell.jpg** bằng lỗ hổng `File Inclusion`
-<img width="2024" height="630" alt="image" src="https://github.com/user-attachments/assets/e8f46328-d5cf-4f22-86b9-fa02f20253fd" />
+<img width="2557" height="1017" alt="image" src="https://github.com/user-attachments/assets/e8f46328-d5cf-4f22-86b9-fa02f20253fd" />
 
 
 
