@@ -118,6 +118,7 @@ curl -i -X POST 'http://[DVWA_IP]/vulnerabilities/upload/'      -b 'security=hig
 ---
 
 ## Screenshots
+
 - Tạo file polyglot đơn giản với magic header **GIF89a**
   <img width="1348" height="102" alt="image" src="https://github.com/user-attachments/assets/90b9dfd5-1675-4c2d-830e-f38b813e1511" />
 
