@@ -118,11 +118,12 @@ curl -i -X POST 'http://[DVWA_IP]/vulnerabilities/upload/'      -b 'security=hig
 ---
 
 ## Screenshots
-- `[Screenshot của lệnh exiftool hoặc hexeditor cho thấy mã PHP bên trong tệp shell.jpg]`
+- Tạo file polyglot đơn giản với magic header **GIF89a**
   <img width="1348" height="102" alt="image" src="https://github.com/user-attachments/assets/90b9dfd5-1675-4c2d-830e-f38b813e1511" />
 
-- `[Screenshot của response từ server xác nhận ../../hackable/uploads/shell.jpg đã được tải lên thành công]`
+- Upload file **shell.jpg** chứa mã độc gọi *webshell*
   <img width="2557" height="1017" alt="image" src="https://github.com/user-attachments/assets/f78bc443-378b-44e9-9776-168947e73427" />
+  
 - Trigger tới **shell.jpg** bằng lỗ hổng `File Inclusion`
 <img width="2024" height="630" alt="image" src="https://github.com/user-attachments/assets/e8f46328-d5cf-4f22-86b9-fa02f20253fd" />
 
